@@ -27,7 +27,8 @@ function App() {
         </Route>
 
         <Route path='project-task'>
-            <Route path="create" element={<AddProjectTaskForm />}/>
+            <Route path="create/:projectId" element={<AddProjectTaskForm />}/>
+            <Route path="update/:projectId" element={<AddProjectTaskForm mode='edit'/>}/>
         </Route>
       </Route>
     </Routes>
