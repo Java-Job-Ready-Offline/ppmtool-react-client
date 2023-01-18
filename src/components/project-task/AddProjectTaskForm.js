@@ -1,18 +1,19 @@
 import { Link,useParams } from "react-router-dom"
 import { useDispatch,useSelector } from "react-redux"
 import { useState } from "react"
-import { createProjectTask,resetStatus } from "./projectTaskSlice"
+import { createProjectTask,resetStatus,updateProjectTask,selectPTBySequence } from "./projectTaskSlice"
 import { getToken } from "../auth/authSlice"
 
 
-function AddProjectTaskForm(){
-    const { projectId } = useParams()
+function AddProjectTaskForm(props){
+    const { projectId,sequence } = useParams()
+    const projectTask = useSelector((state)=> selectPTBySequence(state,sequence))
 
-    const [summary,setSummary] = useState('')
-    const [acceptanceCriteria,setAcceptanceCriteria] = useState('')
-    const [dueDate,setDueDate] = useState('')
-    const [priority,setPriority] = useState('')
-    const [status,setStatus] = useState('')
+    const [summary,setSummary] = useState(projectTask?.summary)
+    const [acceptanceCriteria,setAcceptanceCriteria] = useState(projectTask?.acceptanceCriteria)
+    const [dueDate,setDueDate] = useState(projectTask?.dueDate)
+    const [priority,setPriority] = useState(projectTask?.priority)
+    const [status,setStatus] = useState(projectTask?.status)
     const [requestStatus,setRequestStatus] = useState('idle')
 
     const onSummaryInputChange = e => setSummary(e.target.value)
@@ -26,6 +27,8 @@ function AddProjectTaskForm(){
     const dispatch = useDispatch()
     const token = useSelector(getToken)
 
+    const isEdit = props.mode === 'edit'
+
     const onFormSubmit = (event) =>{
         event.preventDefault()
 
@@ -33,7 +36,24 @@ function AddProjectTaskForm(){
             setRequestStatus('pending')
 
             try {
-                dispatch(createProjectTask({
+                dispatch(
+                    isEdit?
+                    updateProjectTask({
+                        projectTask:{
+                            summary,
+                            acceptanceCriteria,
+                            dueDate,
+                            priority,
+                            status,
+                            projectIdentifier:projectId,
+                            projectSequence:sequence
+                        },
+                        token,
+                        projectId,
+                        projectSequence:sequence
+                    })
+                    :
+                    createProjectTask({
                     projectTask:{
                         summary,
                         acceptanceCriteria,
@@ -130,6 +150,7 @@ function AddProjectTaskForm(){
                             type="submit" 
                             className="btn btn-primary btn-block mt-4" 
                             disabled={!canSave}
+                            value={isEdit ? 'Update':'Save'}
                         />
                     </form>
                 </div>

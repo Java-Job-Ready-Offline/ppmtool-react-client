@@ -4,6 +4,7 @@ import axios from "axios";
 const GET_ALL_TASKS = 'http://localhost:8383/api/task/all/'
 const POST_TASK = 'http://localhost:8383/api/task/create/'
 const PATCH_TASK = 'http://localhost:8383/api/task/update/'
+const DELETE_TASK = 'http://localhost:8383/api/task/delete/'
 
 export const fetchProjectTasks = createAsyncThunk('projectTasks/fetchProjectTasks',async (data)=>{
     console.log(data.projectId)
@@ -31,6 +32,16 @@ export const updateProjectTask = createAsyncThunk('projectTasks/updateProjectTas
     const response = await axios.patch(`${PATCH_TASK}${data.projectId}/${data.projectSequence}`,data.projectTask,{
         headers:{
             'Content-Type':'application/json',
+            'Authorization':data.token
+        }
+    })
+    return response.data
+})
+
+export const deleteProjectTask = createAsyncThunk('projectTasks/deleteProjectTask',async (data)=>{
+    console.log(data)
+    const response = await axios.delete(`${DELETE_TASK}${data.projectId}/${data.projectSequence}`,{
+        headers:{
             'Authorization':data.token
         }
     })
@@ -69,6 +80,17 @@ export const projectTaskSlice = createSlice({
             })
             .addCase(updateProjectTask.fulfilled,(state,action)=>{
                 console.log(action.payload)
+
+                const project = action.payload
+                const projects = state.projectTasks.filter(pt => pt.projectSequence !== project.projectSequence)
+                state.projectTasks = [project,...projects]
+            })
+            .addCase(deleteProjectTask.fulfilled,(state,action)=>{
+                console.log(action.payload)
+                const sequence = action.payload
+
+                const projectTasks = state.projectTasks.filter(pt => pt.projectSequence !== sequence)
+                state.projectTasks = projectTasks
             })
     }
 })
@@ -93,5 +115,10 @@ export const selectTaskWithProgress = state => {
 
  export const getStatus = state => state.projectTasks.status
  export const getError = state => state.projectTasks.error
+ export const selectPTBySequence = (state,sequence)=>{
+    const projectTasks = state.projectTasks.projectTasks
+    return projectTasks.find(pt => pt.projectSequence === sequence)
+ }
+
  export const { resetStatus } = projectTaskSlice.actions
 export default projectTaskSlice.reducer

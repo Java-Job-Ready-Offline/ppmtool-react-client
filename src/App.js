@@ -7,8 +7,13 @@ import LoginForm from "./components/users/LoginForm";
 import RegisterForm from "./components/users/RegisterForm";
 import ProjectBoard from "./components/project/ProjectBoard";
 import AddProjectTaskForm from "./components/project-task/AddProjectTaskForm";
+import PrivateRoute from "./components/auth/PrivateRoute";
+import { useSelector } from "react-redux";
+import { getToken } from "./components/auth/authSlice";
 
 function App() {
+  const token = useSelector(getToken)
+
   return (
   <div>
     <MainNavigation />
@@ -18,17 +23,41 @@ function App() {
         <Route index element={<LandingPage/>} />
         <Route path='login' element={<LoginForm/>} />
         <Route path='register' element={<RegisterForm/>} />
-        <Route path='dashboard' element={<Dashboard />}/>
+        <Route path='dashboard' element={
+          <PrivateRoute token={token}>
+            <Dashboard />
+          </PrivateRoute>
+        }/>
 
         <Route path="project">
-          <Route path='create' element={<AddProjectForm />}/>
-          <Route path='edit/:projectId' element={<AddProjectForm mode='edit' />}/>
-          <Route path='projectboard/:projectId' element={<ProjectBoard/>} />
+          <Route path='create' element={
+            <PrivateRoute token={token}>
+              <AddProjectForm />
+            </PrivateRoute>
+          }/>
+          <Route path='edit/:projectId' element={
+            <PrivateRoute token={token}>
+              <AddProjectForm mode='edit' />
+            </PrivateRoute>
+          }/>
+          <Route path='projectboard/:projectId' element={
+          <PrivateRoute token={token}>
+            <ProjectBoard/>
+          </PrivateRoute>
+          }/>
         </Route>
 
         <Route path='project-task'>
-            <Route path="create/:projectId" element={<AddProjectTaskForm />}/>
-            <Route path="update/:projectId" element={<AddProjectTaskForm mode='edit'/>}/>
+            <Route path="create/:projectId" element={
+            <PrivateRoute token={token}>
+              <AddProjectTaskForm />
+            </PrivateRoute>
+              }/>
+            <Route path="update/:projectId/:sequence" element={
+              <PrivateRoute token={token}>
+              <AddProjectTaskForm mode='edit'/>
+              </PrivateRoute>
+              }/>
         </Route>
       </Route>
     </Routes>

@@ -1,7 +1,22 @@
 import { Link,useParams } from "react-router-dom"
+import { useDispatch,useSelector } from "react-redux"
+import { getToken } from "../auth/authSlice"
+import { deleteProjectTask } from "./projectTaskSlice"
 
 function ProjectTask(props){
     const { projectId } = useParams()
+    const token = useSelector(getToken)
+    const dispatch = useDispatch()
+
+    const onDelete = ()=>{
+        if(token){
+            dispatch(deleteProjectTask({
+                projectId,
+                projectSequence:props.projectSequence,
+                token
+            }))
+        }
+    }
 
     return (
         <div class="card mb-1 bg-light">
@@ -14,11 +29,11 @@ function ProjectTask(props){
                             <p class="card-text text-truncate ">
                                 {props.acceptanceCriteria}
                             </p>
-                            <Link to={`/project-task/update/${projectId}`} class="btn btn-primary">
+                            <Link to={`/project-task/update/${projectId}/${props.projectSequence}`} class="btn btn-primary">
                                 View / Update
                             </Link>
 
-                            <button class="btn btn-danger ml-4">
+                            <button onClick={onDelete} class="btn btn-danger ml-4">
                                 Delete
                             </button>
                         </div>
